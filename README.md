@@ -4,9 +4,7 @@
 
 [English](README.en.md) · 中文
 
-![橙子首页 / Orange home](docs/images/home.png)
-
-*A hotkey desktop shell for Claude Code & Codex — one window, shared memory, your own knowledge base.*
+![橙子首页](docs/images/home.png)
 
 橙子是一个 macOS 桌面窗口，后台接的是 Claude Code（`claude`）或 Codex（`codex`）命令行。你说一句话，它调用对应的工具把事办完。
 
@@ -20,15 +18,15 @@
 
 ## 看看长什么样
 
-| 对话：日程和可勾选的待办<br>*Chat: your schedule and checkable to-dos* | 知识库：资料自动摘要、打标签、分板块<br>*Knowledge base: auto summaries, tags and sections* |
+| 对话：日程和可勾选的待办 | 知识库：资料自动摘要、打标签、分板块 |
 |---|---|
 | ![对话](docs/images/chat.png) | ![知识库](docs/images/kb.png) |
 
-| 自定义模式示例：按课表排学习进度<br>*A custom mode: track a study plan* |
+| 自定义模式示例：按课表排学习进度 |
 |---|
 | ![学习卡片](docs/images/study.png) |
 
-> 截图里是演示数据。界面支持中文 / English 一键切换（右上角「中文 | EN」），默认跟随系统语言。<br>*Demo data. The UI switches between Chinese and English with one click (top right), defaulting to your system language.*
+> 截图里是演示数据。界面支持中文 / English 一键切换（右上角「中文 | EN」），默认跟随系统语言。
 
 ## 安装
 
