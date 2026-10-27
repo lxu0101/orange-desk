@@ -3,10 +3,28 @@
   "hotkey": "Alt+Space",
   "permissionMode": "acceptEdits",
   "allowedTools": [
-    "Read", "Glob", "Grep", "Write", "Edit", "WebSearch", "WebFetch", "Skill", "ToolSearch",
-    "Bash(lark-cli:*)", "Bash(date:*)", "Bash(ls:*)", "Bash(cat:*)", "Bash(python3:*)",
-    "Bash(grep:*)", "Bash(head:*)", "Bash(tail:*)", "Bash(wc:*)", "Bash(find:*)",
-    "Bash(echo:*)", "Bash(jq:*)", "Bash(mkdir:*)",
+    "Read",
+    "Glob",
+    "Grep",
+    "Write",
+    "Edit",
+    "WebSearch",
+    "WebFetch",
+    "Skill",
+    "ToolSearch",
+    "Bash(lark-cli:*)",
+    "Bash(date:*)",
+    "Bash(ls:*)",
+    "Bash(cat:*)",
+    "Bash(python3:*)",
+    "Bash(grep:*)",
+    "Bash(head:*)",
+    "Bash(tail:*)",
+    "Bash(wc:*)",
+    "Bash(find:*)",
+    "Bash(echo:*)",
+    "Bash(jq:*)",
+    "Bash(mkdir:*)",
     "mcp__claude_ai_flomo",
     "mcp__claude_ai_Notion"
   ],
@@ -19,5 +37,10 @@
   "codexModel": "",
   "codexPath": "",
   "flomoSync": false,
-  "kbTopics": "工作、学习、产品、行业观察"
+  "kbTopics": "工作、学习、产品、行业观察",
+  "theme": {
+    "name": "橙子",
+    "icon": "🍊",
+    "accent": "#ef7d22"
+  }
 }

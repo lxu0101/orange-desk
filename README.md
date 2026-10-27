@@ -75,6 +75,7 @@ cd ~/orange-desk && make
 | 后端、模型、权限、工作目录 | `config.json` | 不用，重开橙子即可 |
 | 你的偏好、规则、记忆 | `~/Orange/AGENTS.md`、`~/Orange/shared/memory/` | 不用 |
 | 首页快捷按钮（图标、标题、点击后发给 AI 的 prompt） | 复制 `chips.example.json` 为 `chips.json` 再改，不用动代码 | 不用 |
+| 名字、图标、主色（不想要橙子，换成 🍋🍑🍇 也行） | `config.json` 里的 `theme`，比如 `{"name": "柠檬", "icon": "🍋", "accent": "#e0b400"}` | 不用 |
 | 界面样式 | `ui.html` | 不用 |
 | 加一种「模式」 | 在 `prompts/` 里写一个 md，在 `ui.html` 里加一个按钮指向它（参考 `prompts/study.md`） | 不用 |
 | 知识库接入 flomo、Notion、Obsidian、飞书等 | 在 Claude / Codex 里连好，对话里说「同步进知识库」，见下文 | 不用 |

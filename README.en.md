@@ -51,6 +51,7 @@ Building from source means macOS won't block the app as "unidentified developer"
 | Your preferences and memory | `~/Orange/AGENTS.md`, `~/Orange/shared/memory/` |
 | Home-screen shortcuts and their prompts | copy `chips.example.json` → `chips.json` |
 | UI language | the 中文 \| EN switch (top right); add a language by extending the dictionary at the bottom of `ui.html` |
+| Name, icon and accent color (not a fan of oranges? use 🍋🍑🍇) | `theme` in `config.json`, e.g. `{"name": "Lemon", "icon": "🍋", "accent": "#e0b400"}` |
 | UI | `ui.html` (reopen to apply) |
 | Window / hotkey logic | `Orange.swift`, then `make build` |
 

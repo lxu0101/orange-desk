@@ -28,6 +28,7 @@ struct Config {
     // 知识库：flomo 自动同步默认关（没连 flomo 的人跑了也是白跑）；kbTopics 是 flomo 导入时保留哪些主题
     var flomoSync = false
     var kbTopics = "工作、学习、产品、行业观察"
+    var theme: [String: String] = [:]   // 名字 / 图标 / 主色，比如 {"name": "柠檬", "icon": "🍋", "accent": "#e0b400"}
     var obsidianVault = ""   // Obsidian vault 的路径；填了，知识库里就多一个「同步 Obsidian」（本地文件夹，不用 AI）
 
     static func load() -> Config {
@@ -47,6 +48,7 @@ struct Config {
         if let v = obj["codexNetwork"] as? Bool { c.codexNetwork = v }
         if let v = obj["flomoSync"] as? Bool { c.flomoSync = v }
         if let v = obj["kbTopics"] as? String, !v.isEmpty { c.kbTopics = v }
+        if let v = obj["theme"] as? [String: String] { c.theme = v }
         if let v = obj["obsidianVault"] as? String { c.obsidianVault = (v as NSString).expandingTildeInPath }
         return c
     }
@@ -335,6 +337,7 @@ class Controller: NSObject, WKScriptMessageHandler, WKUIDelegate, NSWindowDelega
             if let v = msg["value"] as? String, v == "zh" || v == "en" { state["lang"] = v; saveState(state) }
         case "ready":
             emit(["type": "lang", "value": lang])
+            if !config.theme.isEmpty { var t: [String: Any] = config.theme; t["type"] = "theme"; emit(t) }
             emit(["type": "backend", "value": backend])
             if let d = FileManager.default.contents(atPath: appDir + "/chips.json"), let arr = (try? JSONSerialization.jsonObject(with: d)) as? [[String: Any]] { emit(["type": "chips", "items": arr]) }
             emitModels()

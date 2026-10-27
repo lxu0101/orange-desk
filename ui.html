@@ -623,7 +623,7 @@ function addMe(text, images) {
 function newTurn() {
   const wrap = document.createElement('div');
   wrap.className = 'turn-ai';
-  wrap.innerHTML = '<div class="avatar">🍊</div><div class="body"><div class="thinking"><div class="spin"></div>思考中…</div></div>';
+  wrap.innerHTML = '<div class="avatar">' + esc(window.__icon || '🍊') + '</div><div class="body"><div class="thinking"><div class="spin"></div>思考中…</div></div>';
   log.appendChild(wrap); stick();
   turn = { body: wrap.querySelector('.body'), thinking: wrap.querySelector('.thinking'), steps: null, text: null, count: 0 };
 }
@@ -725,6 +725,7 @@ window.onAgent = ev => {
   else if (ev.type === 'kb_msg') { kbStat(ev.text); }
   else if (ev.type === 'chips') renderChips(ev.items);
   else if (ev.type === 'lang') window.setLang(ev.value, false);
+  else if (ev.type === 'theme') applyTheme(ev);
   else if (ev.type === 'kb_detail') { kb.det[ev.id] = ev; kbRender(); }
 };
 
@@ -916,6 +917,17 @@ function submit() {
 }
 sendBtn.onclick = submit;
 $('new').onclick = () => post({ type: 'new' });
+// 主题：config.json 里的 theme 可以换名字、图标（任意 emoji，比如 🍋🍑🍇）和主色
+function applyTheme(t) {
+  const root = document.documentElement.style;
+  if (/^#[0-9a-f]{6}$/i.test(t.accent || '')) {
+    const n = parseInt(t.accent.slice(1), 16), rgb = [n >> 16, (n >> 8) & 255, n & 255].join(',');
+    root.setProperty('--accent', t.accent);
+    root.setProperty('--accent-soft', `rgba(${rgb},.14)`);
+  }
+  if (t.icon) { window.__icon = String(t.icon).slice(0, 8); document.querySelectorAll('.logo, #empty .big, .avatar').forEach(e => e.textContent = window.__icon); }
+  if (t.name) { const n = String(t.name).slice(0, 20); document.querySelector('header .title').textContent = n; document.title = n; }
+}
 function bindChips() {
   document.querySelectorAll('.chip').forEach(c => c.onclick = () => {
     input.value = c.dataset.q; autosize(); refreshSend(); input.focus();
