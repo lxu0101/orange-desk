@@ -311,7 +311,7 @@ class Controller: NSObject, WKScriptMessageHandler, WKUIDelegate, NSWindowDelega
             emit(["type": "pinned", "value": pinned])
         case "bug":
             // 打开一封写好标题和模板的邮件，系统版本、当前后端自动填上
-            let body = "（请描述发生了什么，最好附截图；截图前看一下有没有私人资料）\n\n- 发生了什么：\n- 怎么复现：\n- 期望的结果：\n\n系统：macOS \(ProcessInfo.processInfo.operatingSystemVersionString)\n后端：\(backend == "codex" ? "Codex" : "Claude")\n"
+            let body = "（最好附上截图；截图前看一下有没有私人资料）\n\n- 遇到了什么问题：\n- 出问题前你做了哪几步（按顺序写）：\n- 你本来希望它怎样：\n\n系统：macOS \(ProcessInfo.processInfo.operatingSystemVersionString)\n后端：\(backend == "codex" ? "Codex" : "Claude")\n"
             var c = URLComponents()
             c.scheme = "mailto"; c.path = bugEmail
             c.queryItems = [URLQueryItem(name: "subject", value: "【橙子 Bug】"), URLQueryItem(name: "body", value: body)]
