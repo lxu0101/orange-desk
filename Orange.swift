@@ -192,6 +192,8 @@ class Controller: NSObject, WKScriptMessageHandler, WKUIDelegate, NSWindowDelega
     var claudeModel: String { safeToken(state["model_claude"] as? String ?? config.model) }
     var codexModel: String { safeToken(state["model_codex"] as? String ?? config.codexModel) }
     var codexEffort: String { safeToken(state["effort_codex"] as? String ?? "") }
+    // 界面语言：用户选过就用选的，没选过看系统语言列表里有没有中文（有就显示中文，否则英文）
+    var lang: String { (state["lang"] as? String) ?? (Locale.preferredLanguages.contains { $0.hasPrefix("zh") } ? "zh" : "en") }
     // 界面上选的后端；每个对话各属一家，换后端就是开新对话
     var backend: String { (state["backend"] as? String ?? config.backend) == "codex" ? "codex" : "claude" }
 
@@ -329,7 +331,10 @@ class Controller: NSObject, WKScriptMessageHandler, WKUIDelegate, NSWindowDelega
                 state["todos"] = todos
                 saveState(state)
             }
+        case "lang":
+            if let v = msg["value"] as? String, v == "zh" || v == "en" { state["lang"] = v; saveState(state) }
         case "ready":
+            emit(["type": "lang", "value": lang])
             emit(["type": "backend", "value": backend])
             if let d = FileManager.default.contents(atPath: appDir + "/chips.json"), let arr = (try? JSONSerialization.jsonObject(with: d)) as? [[String: Any]] { emit(["type": "chips", "items": arr]) }
             emitModels()
@@ -762,8 +767,9 @@ class Controller: NSObject, WKScriptMessageHandler, WKUIDelegate, NSWindowDelega
 // ---------- 知识库 ----------
 // 位置：<工作目录>/shared/knowledge/。每条资料是一个带 frontmatter 的 .md；新收的先进 _inbox（待归类），
 // 用户确认后移到「板块/子类」文件夹。文件和截图放 _assets。整理（读网页、读 PDF、识别截图、摘要、打标签）交给一次性的 claude -p 任务
-let kbDefaultDirs = ["工作/项目", "工作/调研", "学习/笔记", "学习/课程", "_inbox", "_assets"]
-let kbSubOrder = ["项目", "调研", "笔记", "课程"]
+let kbDefaultDirsZh = ["工作/项目", "工作/调研", "学习/笔记", "学习/课程", "_inbox", "_assets"]
+let kbDefaultDirsEn = ["Work/Projects", "Work/Research", "Learning/Notes", "Learning/Courses", "_inbox", "_assets"]
+let kbSubOrder = ["项目", "调研", "笔记", "课程", "Projects", "Research", "Notes", "Courses"]
 let kbFields = ["title", "type", "source", "url", "origin", "asset", "images", "tags", "summary", "section", "status", "created"]
 let kbReadme = """
 # 知识库
@@ -796,7 +802,7 @@ extension Controller {
         let fm = FileManager.default
         // 只在知识库还是空的时建默认文件夹，免得用户删掉、改名、合并过的又被建回来
         let fresh = ((try? fm.contentsOfDirectory(atPath: kbDir)) ?? []).filter { !$0.hasPrefix("_") && !$0.hasPrefix(".") && $0 != "README.md" }.isEmpty
-        for d in kbDefaultDirs where (fresh || d.hasPrefix("_")) && !fm.fileExists(atPath: kbDir + "/" + d) {
+        for d in (lang == "en" ? kbDefaultDirsEn : kbDefaultDirsZh) where (fresh || d.hasPrefix("_")) && !fm.fileExists(atPath: kbDir + "/" + d) {
             try? fm.createDirectory(atPath: kbDir + "/" + d, withIntermediateDirectories: true)
         }
         if (try? String(contentsOfFile: kbDir + "/README.md", encoding: .utf8))?.contains("先给总结") != true { try? kbReadme.write(toFile: kbDir + "/README.md", atomically: true, encoding: .utf8) }

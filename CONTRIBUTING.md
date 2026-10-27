@@ -20,7 +20,8 @@
 
 - `make build` 能编译通过
 - 不要提交 `config.json`、`chips.json`、`feishu_folders.json`、`.state.json`（已经在 `.gitignore` 里）
-- 改了界面的话，可以用 `bash docs/screenshot/shoot.sh` 重新截 README 的图（只用演示数据）
+- 改了界面的话，可以用 `bash docs/screenshot/shoot.sh` 重新截 README 的图（中英文各一套，只用演示数据）
+- 新增界面文案时，在 `ui.html` 底部的 `EN` 字典里补一条英文翻译（整句对应），没补的话英文界面里会显示中文原文
 - 中文文案尽量直白，少用术语
 
 ## 提 Issue / 反馈 Bug

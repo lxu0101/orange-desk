@@ -125,6 +125,7 @@
   .study .pill { font-size: 11px; padding: 1px 8px; border-radius: 10px; background: var(--code); color: var(--muted); white-space: nowrap; }
   .study .todo-row { margin: 0 -14px; align-items: flex-start; }
   .study .todo-row .k { flex: none; width: 66px; font-size: 12px; color: var(--muted); padding-top: 1px; }
+  html[lang="en"] .study .todo-row .k { width: 104px; white-space: nowrap; }
   .study .tip { font-size: 12px; color: var(--muted); margin: 6px 0 0; }
   .study-q { display: grid; grid-template-columns: 76px minmax(0, 1fr) auto; gap: 10px; padding: 6px 0; border-top: 1px solid var(--line); font-size: 12.5px; align-items: center; }
   .study-q:first-of-type { border-top: 0; }
@@ -318,6 +319,7 @@
     <div class="seg" id="seg" title="换后端会开一个新对话；共用的记忆和指令两边都能读">
       <button data-b="claude">Claude</button><button data-b="codex">Codex</button>
     </div>
+    <div class="seg" id="langseg" title="界面语言 / Language"><button data-l="zh">中文</button><button data-l="en">EN</button></div>
     <button class="btn" id="bug" title="遇到 bug？点这里发邮件给作者">🐞 反馈</button>
   </header>
 
@@ -722,6 +724,7 @@ window.onAgent = ev => {
   else if (ev.type === 'kb_busy') { kb.busy = ev.value ? (ev.label || '处理中') : ''; kbStat(); }
   else if (ev.type === 'kb_msg') { kbStat(ev.text); }
   else if (ev.type === 'chips') renderChips(ev.items);
+  else if (ev.type === 'lang') window.setLang(ev.value, false);
   else if (ev.type === 'kb_detail') { kb.det[ev.id] = ev; kbRender(); }
 };
 
@@ -916,7 +919,7 @@ $('new').onclick = () => post({ type: 'new' });
 function bindChips() {
   document.querySelectorAll('.chip').forEach(c => c.onclick = () => {
     input.value = c.dataset.q; autosize(); refreshSend(); input.focus();
-    if (!c.dataset.q.endsWith('：')) submit();
+    if (!/[：:]\s*$/.test(c.dataset.q)) submit();
   });
 }
 // 首页快捷按钮：有 chips.json 就用它的（每项 icon / title / sub / prompt），没有就用上面写好的默认按钮
@@ -1036,7 +1039,7 @@ function kbAsk() {
   const t = $('kbask').value.trim();
   if (!t) return;
   const scope = ['all', 'inbox'].includes(kb.sel) ? '整个知识库 shared/knowledge/' : `知识库 shared/knowledge/${kb.sel}/`;
-  const text = `在${scope}里找：${t}\n先看资料的 summary 和 tags，再读相关正文。按这个结构回答，别写多余的开场白：\n1. 总结：先用 2 到 4 句话直接回答问题。\n2. 支持性证据：分点列出资料里的关键内容、数据或案例，每点标明来自哪条资料（写标题就行，不要在这里放链接）。\n3. 来源：最后单独一节，列出用到的资料，每条写成 Markdown 超链接 [标题](url)，url 原样复制资料 frontmatter 里的 url 字段（点开就是源文件）。\n没找到就直说，不要编。`;
+  const text = `在${scope}里找：${t}\n先看资料的 summary 和 tags，再读相关正文。按这个结构回答，别写多余的开场白：\n1. 总结：先用 2 到 4 句话直接回答问题。\n2. 支持性证据：分点列出资料里的关键内容、数据或案例，每点标明来自哪条资料（写标题就行，不要在这里放链接）。\n3. 来源：最后单独一节，列出用到的资料，每条写成 Markdown 超链接 [标题](url)，url 原样复制资料 frontmatter 里的 url 字段（点开就是源文件）。\n没找到就直说，不要编。${window.__lang === 'en' ? '\nPlease answer in English.' : ''}`;
   $('kbask').value = '';
   setView('chat');
   window.kbPendingMe = t;
@@ -1272,6 +1275,164 @@ function mock(msg) {
   ];
   seq.forEach((ev, i) => setTimeout(() => onAgent(ev), 400 + i * 500));
 }
+// ---------- 中英文界面 ----------
+// 界面文案原文是中文；切到 English 时，由这一层把已知的整句翻成英文（整句精确匹配或固定句式），
+// 用户的资料、AI 的回答、对话标题都不会被动。要补翻译，往下面的 EN / PAT 里加一行就行。
+(function () {
+  const EN = {
+    '＋ 新对话': '+ New chat', '历史对话': 'History', '还没有对话': 'No chats yet', '新对话': 'New chat',
+    '橙子': 'Orange', '对话': 'Chat', '知识库': 'Knowledge', '就绪': 'Ready', '处理中': 'Working', '停止': 'Stop', '发送': 'Send',
+    '显示/隐藏历史对话': 'Show / hide history', '选择模型': 'Choose model', '🐞 反馈': '🐞 Feedback',
+    '遇到 bug？点这里发邮件给作者': 'Found a bug? Email the author',
+    '换后端会开一个新对话；共用的记忆和指令两边都能读': 'Switching backend starts a new chat; memory and instructions are shared by both',
+    '今天想让我做点什么？': 'What can I do for you today?',
+    'Claude 和 Codex，连同你的 skill 和连接器，都在这一个入口里 · ⌥ 空格 随时唤起': 'Claude and Codex, plus your skills and connectors · ⌥ Space to summon',
+    '📅 今明两天日程': '📅 Today & tomorrow', '飞书日历或其他日历': 'Feishu or any calendar',
+    '看一下我今天和明天的日程，按时间列出来': 'Show my schedule for today and tomorrow, in time order',
+    '✅ 整理待办': '✅ Organize to-dos', '说完生成可勾选的清单': 'Get a checkable list',
+    '帮我把今天要做的事整理成待办清单：': 'Turn what I need to do today into a to-do list:',
+    '🔄 同步资料': '🔄 Sync sources', '从你连的来源收进知识库': 'Pull from your connectors into the knowledge base',
+    '把这个来源的新内容同步进知识库（比如 flomo、Notion、Obsidian）：': 'Sync new content from this source into my knowledge base (e.g. flomo, Notion, Obsidian):',
+    '📚 今天学什么': '📚 What to study today', '按你的课表排进度': 'Track your study plan',
+    '今天学什么？按 {{APP_DIR}}/prompts/study.md 的要求读课表并输出学习卡片': 'What should I study today? Follow {{APP_DIR}}/prompts/study.md: read my study plan and output the study card',
+    '想让我做什么？': 'What should I do?', '想让 Codex 做什么？': 'What should Codex do?',
+    '回车发送 · ⇧回车换行 · ⌘V 贴图 · Esc 停止': 'Enter to send · ⇧Enter for newline · ⌘V to paste image · Esc to stop',
+    '思考中…': 'Thinking…', '出错了': 'Something went wrong', '移除': 'Remove', '从列表移除': 'Remove from list',
+    '后台处理中': 'Working in the background', '有新结果': 'New result', '已完成，点开查看': 'Done — click to view', '刚刚': 'Just now',
+    '还没登录 Claude。按 README 里的命令在终端登录一次就好。': 'Not signed in to Claude. Log in once in Terminal using the command in the README.',
+    '当前任务还在跑，等它完成再同步。': 'A task is still running — sync after it finishes.', '同步已学内容到课表': 'Sync completed items to plan',
+    // 工具步骤
+    '执行命令': 'Run command', '读取文件': 'Read file', '写入文件': 'Write file', '修改文件': 'Edit file', '查找文件': 'Find files',
+    '搜索内容': 'Search content', '联网搜索': 'Web search', '读取网页': 'Read page', '调用技能': 'Use skill', '派出助手': 'Delegate', '更新清单': 'Update list',
+    // 待办 / 学习卡片
+    '待办': 'To-do', '全部完成，今天收工 🎉': 'All done — nice work 🎉', '打开课表 ↗': 'Open plan ↗',
+    "📖 精读 75'": "📖 Read 75'", "📰 资源 60'": "📰 Resource 60'", "✍️ 输出 45'": "✍️ Output 45'",
+    '这一天课表里没有具体内容。': 'This day has no details in the plan.',
+    '学完这天还有余力，就点队列里的「下一个」，接着学。': 'Got energy left? Tap "Next" in the queue to keep going.',
+    '队列补完了 🎉': 'Queue cleared 🎉', '已学 ✓': 'Done ✓', '今天': 'Today', '下一个': 'Next', '待确认': 'Unconfirmed', '未学': 'Not yet',
+    '追齐队列 · 按课表顺序一天一天补': 'Catch-up queue · one day at a time, in plan order', '已追平': 'Caught up',
+    '输出日': 'Output day', '学习课表': 'Study plan', '把你勾的写回飞书，没有打钩列的周会补一列': 'Writes your ticks back to Feishu; weeks without a tick column get one',
+    // 模型选择
+    '模型': 'Model', '推理强度': 'Reasoning effort', '默认': 'Default', '低': 'Low', '中': 'Medium', '高': 'High', '超高': 'Extra high', '最高': 'Max', '极限': 'Ultra',
+    '当前任务不受影响，下一条消息起生效': 'Current task is unaffected; applies from the next message', '下一条消息起生效': 'Applies from the next message',
+    'Fable 5.1（需额外额度）': 'Fable 5.1 (extra quota needed)',
+    // 知识库
+    '粘贴链接、一段文字或截图，回车保存；PDF、Word 直接拖进来': 'Paste a link, text or screenshot and press Enter; drag in PDF or Word files',
+    '选择文件…': 'Choose files…', '粘贴后回车保存，收进来先放「待归类」，橙子读完会给出摘要、标签和建议板块': 'Press Enter to save. Items land in "Inbox" first; Orange then adds a summary, tags and a suggested section',
+    '问知识库：我存过哪些讲 C 端冷启动的？': 'Ask your knowledge base: what have I saved about cold-starting a consumer app?', '问': 'Ask',
+    '📥 待归类': '📥 Inbox', '全部': 'All', '文件': 'File', '链接': 'Link', '笔记': 'Note', '搜索': 'Search',
+    '拖到这里：独立成文件夹': 'Drop here: make it its own folder', '＋ 新板块': '+ New section',
+    '选板块…': 'Choose section…', '等橙子整理…': 'Orange is organizing…', '确认': 'Confirm', '橙子建议放这里': 'Orange suggests this section', '橙子没把握，你选一下': 'Not sure — pick one',
+    '删除（进废纸篓）': 'Delete (to Trash)', '（还没有正文）': '(no content yet)', '打开原文': 'Open original', '打开文件': 'Open file',
+    '没有待归类的资料': 'Nothing in the Inbox', '这里还没有资料，在上面粘贴链接、文字或截图，或把文件拖进来': 'Nothing here yet — paste a link, text or screenshot above, or drag a file in',
+    '已收下，橙子在整理…': 'Got it — Orange is organizing…', '这张图读不出来': "Couldn't read this image", '确认删除？': 'Delete?', '先选一个板块': 'Pick a section first',
+    '更多': 'More', '合并': 'Merge', '取消': 'Cancel', '撤销': 'Undo', '已撤销': 'Undone',
+    '重命名': 'Rename', '新建子文件夹': 'New subfolder', '变成独立文件夹': 'Make standalone folder', '合并到…': 'Merge into…',
+    '删除（文件挪到「未分类」）': 'Delete (files move to "Uncategorized")', '没有可合并的文件夹': 'No folders to merge into',
+    // 来自 Swift 的提示
+    '这个对话上一条还在处理，等它完成或按 Esc 停止。': 'The previous message is still being processed. Wait for it or press Esc to stop.',
+    '找不到 Codex 程序。它在 ChatGPT 桌面版里，请确认已安装，或在 config.json 里填 codexPath。': "Can't find Codex. It ships with the ChatGPT desktop app — make sure it's installed, or set codexPath in config.json.",
+    '没找到 Claude 桌面版自带的 claude 程序，请在 config.json 里填 claudePath。': "Can't find the claude CLI bundled with Claude desktop. Set claudePath in config.json.",
+    '找不到 claude 程序。': "Can't find the claude CLI.", '这段对话的记录找不到了。': "This chat's transcript is gone.",
+    '这个文件没读进来。': "Couldn't read this file.", '先选一个板块。': 'Pick a section first.', '找不到这个文件夹。': "Can't find this folder.",
+    '识别没有返回内容，检查一下 Claude 是否已登录、网络或代理是否正常。': 'No response — check that Claude is signed in and the network or proxy is OK.',
+  };
+  const WD = { '一': 'Mon', '二': 'Tue', '三': 'Wed', '四': 'Thu', '五': 'Fri', '六': 'Sat', '日': 'Sun' };
+  const fixDate = s => s.replace(/(\d+\/\d+) 周([一二三四五六日])/g, (_, d, w) => `${WD[w]} ${d}`);
+  const PAT = [
+    [/^还剩 (\d+) 件$/, m => `${m[1]} left`],
+    [/^用了 (\d+) 个工具$/, m => `Used ${m[1]} tool${m[1] === '1' ? '' : 's'}`],
+    [/^正在处理 · 已用 (\d+) 个工具$/, m => `Working · ${m[1]} tool${m[1] === '1' ? '' : 's'} used`],
+    [/^(\d+) 分钟前$/, m => `${m[1]} min ago`], [/^(\d+) 小时前$/, m => `${m[1]} h ago`],
+    [/^默认 · (.+)$/, m => `Default · ${m[1]}`],
+    [/^今天：补 (.+)$/, m => `Today: catch up on ${fixDate(m[1])}`],
+    [/^(\d+\/\d+) 周([一二三四五六日])$/, m => `${WD[m[2]]} ${m[1]}`],
+    [/^实际：(.*) · 应达：(.*?)( · )?$/, m => `Actual: ${m[1]} · Expected: ${m[2]}${m[3] || ''}`],
+    [/^落后 (\d+) 天$/, m => `${m[1]} day${m[1] === '1' ? '' : 's'} behind`],
+    [/^· 本机已补 (\d+) 天$/, m => `· ${m[1]} day${m[1] === '1' ? '' : 's'} caught up here`],
+    [/^同步到课表（(\d+) 天）$/, m => `Sync to plan (${m[1]} day${m[1] === '1' ? '' : 's'})`],
+    [/^完成 (\d+\/\d+)$/, m => `Done ${m[1]}`],
+    [/^待归类 (\d+) 条，点这里去确认放到哪个板块 →$/, m => `${m[1]} in Inbox — click to review →`],
+    [/^已收下 (.*)，橙子在整理…$/, m => `Got ${m[1]} — Orange is organizing…`],
+    [/^(.*) 超过 50MB，没收$/, m => `${m[1]} is over 50 MB — skipped`],
+    [/^这张图读不出来：(.*)$/, m => `Couldn't read this image: ${m[1]}`],
+    [/^把「(.*)」合并到「(.*)」？$/, m => `Merge "${secName(m[1])}" into "${secName(m[2])}"?`],
+    [/^(子类名字|板块名字)，回车确认$/, m => `${m[1] === '子类名字' ? 'Subfolder' : 'Section'} name, Enter to confirm`],
+    [/^这些工具没被允许用：(.*)。要放开就加进 config\.json 的 allowedTools，然后重开橙子。$/, m => `These tools aren't allowed: ${m[1]}. Add them to allowedTools in config.json and reopen Orange.`],
+    [/^启动失败：(.*)$/, m => `Failed to start: ${m[1]}`],
+    [/^识别到 (\d+) 个数据源：(.*)$/, m => `Found ${m[1]} data source(s): ${m[2]}`],
+    [/^在(.*)下加子类$/, m => `Add subfolder under ${secName(m[1])}`],
+    [/^(全部|文件|链接|笔记) (\d+)$/, m => `${TYPES[m[1]]} ${m[2]}`],
+    [/^(文件|链接|笔记)( · .*)$/, m => `${TYPE1[m[1]]}${m[2].replace(' 手动 ', ' manual ').replace(/ · 手动$/, ' · manual')}`],
+  ];
+  const CJK = /[一-鿿]/;
+  // 用户的资料、AI 的回答、对话标题是内容，不翻；表单框的 placeholder 是界面，要翻
+  const SKIP = '.md, .turn-me, .kb-det, .kb-it .ti, .kb-it .su, .kb-tag, #convos b, script, style, pre';
+  // 知识库板块名（文件夹名）只在界面上显示成英文，磁盘上的文件夹名不动
+  const SEC = { '学习': 'Learning', '工作': 'Work', '项目': 'Projects', '调研': 'Research', '笔记': 'Notes', '课程': 'Courses', '未分类': 'Uncategorized', '待定': 'Undecided' };
+  const secName = x => x.split('/').map(p => SEC[p] || p).join('/');
+  const TYPES = { '全部': 'All', '文件': 'Files', '链接': 'Links', '笔记': 'Notes' }, TYPE1 = { '文件': 'File', '链接': 'Link', '笔记': 'Note' };
+  let lang = 'zh';
+  function tr(s, el) {
+    const t = s.trim();
+    if (!t || !CJK.test(t)) return null;
+    if (el && el.closest && el.closest('#kbnav, option, #kbmenu')) { const sn = secName(t); if (sn !== t) return s.replace(t, sn); }
+    if (Object.prototype.hasOwnProperty.call(EN, t)) return s.replace(t, EN[t]);
+    for (const [re, fn] of PAT) { const m = t.match(re); if (m) return s.replace(t, fn(m)); }
+    return null;
+  }
+  // 学习卡片、待办卡片虽然在回答气泡里，但它们的固定文案是界面的一部分，要翻
+  function skipEl(el) { return !el || (el.closest && el.closest(SKIP) && !el.closest('.study, .todo')); }
+  function doText(n) {
+    if (lang !== 'en' || skipEl(n.parentElement)) return;
+    const out = tr(n.data, n.parentElement);
+    if (out !== null && out !== n.data) { n.__zh = n.data; n.__en = out; n.data = out; }
+  }
+  const ATTRS = ['title', 'placeholder', 'data-q'];
+  function doAttr(el, a) {
+    if (lang !== 'en' || skipEl(el)) return;
+    const v = el.getAttribute(a);
+    if (!v) return;
+    const out = tr(v, el);
+    if (out !== null && out !== v) { el.setAttribute('data-zh-' + a, v); el.setAttribute('data-en-' + a, out); el.setAttribute(a, out); }
+  }
+  function walk(root) {
+    if (root.nodeType === 3) return doText(root);
+    if (root.nodeType !== 1) return;
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    const texts = []; while (w.nextNode()) texts.push(w.currentNode);
+    texts.forEach(doText);
+    const els = [root, ...root.querySelectorAll('[title],[placeholder],[data-q]')];
+    els.forEach(el => ATTRS.forEach(a => { if (el.hasAttribute && el.hasAttribute(a)) doAttr(el, a); }));
+  }
+  function restore() {
+    const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    const texts = []; while (w.nextNode()) texts.push(w.currentNode);
+    texts.forEach(n => { if (n.__zh !== undefined && n.data === n.__en) n.data = n.__zh; });
+    document.querySelectorAll('*').forEach(el => ATTRS.forEach(a => {
+      const z = el.getAttribute && el.getAttribute('data-zh-' + a);
+      if (z && el.getAttribute(a) === el.getAttribute('data-en-' + a)) el.setAttribute(a, z);
+    }));
+  }
+  new MutationObserver(list => {
+    for (const r of list) {
+      if (r.type === 'childList') r.addedNodes.forEach(walk);
+      else if (r.type === 'characterData') doText(r.target);
+      else if (r.type === 'attributes') doAttr(r.target, r.attributeName);
+    }
+  }).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS });
+  window.setLang = function (l, save) {
+    l = l === 'en' ? 'en' : 'zh';
+    const changed = l !== lang; lang = l; window.__lang = l;
+    document.documentElement.lang = l === 'en' ? 'en' : 'zh-CN';
+    document.querySelectorAll('#langseg button').forEach(b => b.classList.toggle('on', b.dataset.l === l));
+    if (changed) { if (l === 'en') walk(document.body); else restore(); }
+    if (save && typeof post === 'function') post({ type: 'lang', value: l });
+  };
+  window.__lang = 'zh';
+  document.querySelectorAll('#langseg button').forEach(b => b.onclick = () => window.setLang(b.dataset.l, true));
+  window.setLang('zh');
+})();
 </script>
 </body>
 </html>
