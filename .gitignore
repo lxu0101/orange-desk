@@ -1,0 +1,10 @@
+config.json
+feishu_folders.json
+.state.json
+.backup/
+__pycache__/
+.DS_Store
+橙子.app/Contents/MacOS/
+chips.json
+publish.sh
+Icon?
