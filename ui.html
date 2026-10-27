@@ -318,6 +318,7 @@
     <div class="seg" id="seg" title="换后端会开一个新对话；共用的记忆和指令两边都能读">
       <button data-b="claude">Claude</button><button data-b="codex">Codex</button>
     </div>
+    <button class="btn" id="bug" title="遇到 bug？点这里发邮件给作者">🐞 反馈</button>
   </header>
 
   <div id="kb">
@@ -1023,6 +1024,7 @@ function setView(v) {
   if (v === 'kb') { post({ type: 'kb_load' }); kbRender(); setTimeout(() => $('kbinput').focus(), 0); } else input.focus();
 }
 document.querySelectorAll('#viewseg button').forEach(b => b.onclick = () => setView(b.dataset.v));
+$('bug').onclick = () => post({ type: 'bug' });
 $('kbpick').onclick = () => $('kbfile').click();
 $('kbfile').onchange = e => { kbAddFiles(e.target.files); e.target.value = ''; };
 $('kbinput').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); kbSave(); } });

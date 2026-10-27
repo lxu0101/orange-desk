@@ -100,6 +100,12 @@ cd ~/orange-desk && make
 - **登录时报 403 / 连不上**：如果你在用代理，在 `config.json` 的 `proxy` 里填代理地址（比如 `http://127.0.0.1:7890`）。橙子默认会读系统代理。
 - **找不到 claude / codex 程序**：在 `config.json` 里填 `claudePath` / `codexPath`。
 
+## 遇到 Bug / 联系作者
+
+- 点橙子右上角的 **🐞 反馈**，会自动打开一封写好模板的邮件
+- 或直接发邮件到 **lxu0101@gmail.com**，最好附上截图（截图前看一下有没有私人资料）
+- 会用 GitHub 的话，也可以提 [Issue](https://github.com/lxu0101/orange-desk/issues)
+
 ## 参与贡献
 
 欢迎提 Issue 和 PR（怎么改见 [CONTRIBUTING.md](CONTRIBUTING.md)），特别欢迎：新的模式（`prompts/`）、新的知识库数据源（Notion、Obsidian……）、界面主题。

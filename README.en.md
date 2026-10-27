@@ -49,6 +49,10 @@ Building from source means macOS won't block the app as "unidentified developer"
 | UI | `ui.html` (reopen to apply) |
 | Window / hotkey logic | `Orange.swift`, then `make build` |
 
+## Bugs & contact
+
+Click **🐞 反馈** (Feedback) in the top-right corner of Orange to open a pre-filled email, or write to **lxu0101@gmail.com**. GitHub [Issues](https://github.com/lxu0101/orange-desk/issues) are welcome too.
+
 See [CONTRIBUTING.md](CONTRIBUTING.md) for details. If Orange is useful to you, a ⭐ helps a lot.
 
 ## License

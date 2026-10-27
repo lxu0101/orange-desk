@@ -23,6 +23,6 @@
 - 改了界面的话，可以用 `bash docs/screenshot/shoot.sh` 重新截 README 的图（只用演示数据）
 - 中文文案尽量直白，少用术语
 
-## 提 Issue
+## 提 Issue / 反馈 Bug
 
-遇到问题请附上：macOS 版本、用的后端（Claude / Codex）、橙子提示的原话或截图。截图前请检查有没有你的私人资料。
+可以在 GitHub 提 Issue，也可以点橙子右上角的 🐞 反馈，或发邮件到 lxu0101@gmail.com。请附上：macOS 版本、用的后端（Claude / Codex）、橙子提示的原话或截图。截图前请检查有没有你的私人资料。

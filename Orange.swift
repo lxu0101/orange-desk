@@ -4,6 +4,8 @@ import Carbon
 import WebKit
 
 let home = FileManager.default.homeDirectoryForCurrentUser.path
+// 右上角 🐞 反馈 bug 发到这个邮箱；fork 之后改成你自己的
+let bugEmail = "lxu0101@gmail.com"
 // 橙子的目录 = 橙子.app 所在的文件夹（ui.html、config.json 都在这里），所以仓库放在哪都能用
 let appDir: String = {
     let dir = (Bundle.main.bundlePath as NSString).deletingLastPathComponent
@@ -307,6 +309,13 @@ class Controller: NSObject, WKScriptMessageHandler, WKUIDelegate, NSWindowDelega
             saveState(state)
             window.level = pinned ? .floating : .normal
             emit(["type": "pinned", "value": pinned])
+        case "bug":
+            // 打开一封写好标题和模板的邮件，系统版本、当前后端自动填上
+            let body = "（请描述发生了什么，最好附截图；截图前看一下有没有私人资料）\n\n- 发生了什么：\n- 怎么复现：\n- 期望的结果：\n\n系统：macOS \(ProcessInfo.processInfo.operatingSystemVersionString)\n后端：\(backend == "codex" ? "Codex" : "Claude")\n"
+            var c = URLComponents()
+            c.scheme = "mailto"; c.path = bugEmail
+            c.queryItems = [URLQueryItem(name: "subject", value: "【橙子 Bug】"), URLQueryItem(name: "body", value: body)]
+            if let u = c.url { NSWorkspace.shared.open(u) }
         case "open":
             if let u = msg["url"] as? String, let url = URL(string: u) {
                 // 链接里的 file:// 只放行知识库目录里的文件，别的本地路径不打开
